@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>程序设计基础 · 入门学习</title>
+<meta name="description" content="一个交互式的程序设计基础学习网页：从变量、条件、循环到函数与数组，每节都有可运行的演示和小测验。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232554D0'/><text x='16' y='22' font-size='14' text-anchor='middle' fill='white' font-family='monospace' font-weight='bold'>&lt;/&gt;</text></svg>">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F2F4F7;--surface:#FFFFFF;--ink:#182230;--ink-2:#4A5A6A;--ink-3:#8A99A8;
+  --line:#E1E7EE;--accent:#2554D0;--accent-soft:#E3EBFC;--accent-ink:#1B3FA0;
+  --code-bg:#151C2B;--code-ink:#D7E0EE;
+  --kw:#7FB0FF;--str:#98C379;--num:#E0A866;--cmt:#5E6E85;--fn:#E5C07B;
+  --ok:#2E9E6B;--bad:#D9684F;
+  --r-lg:16px;--r-md:12px;
+  --shadow:0 1px 2px rgba(20,32,50,.05),0 8px 26px rgba(20,32,50,.06)
+}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--ink);line-height:1.65;min-height:100vh;
+  background-image:radial-gradient(1000px 400px at 85% -10%,#E4EBF9 0%,transparent 60%)
+}
+button{font-family:inherit}
+input,select{font-family:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:18px 16px 60px}
+/* ===== 顶栏 ===== */
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:4px 2px 16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700}
+.brand .mark{width:36px;height:36px;border-radius:11px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;font-weight:700}
+.brand small{font-size:12px;color:var(--ink-3);font-weight:400;margin-left:2px}
+.progress-box{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--ink-3)}
+.progress{width:140px;height:8px;border-radius:99px;background:#DDE4EE;overflow:hidden}
+.progress i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .3s}
+/* ===== 布局 ===== */
+.layout{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start}
+.sidebar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:10px;position:sticky;top:14px;min-width:0}
+.lesson-nav{display:flex;gap:4px;flex-direction:column}
+.nav-item{display:flex;align-items:center;gap:9px;width:100%;border:0;background:transparent;text-align:left;padding:10px 12px;border-radius:10px;font-size:14px;color:var(--ink-2);cursor:pointer;transition:background .12s,color .12s}
+.nav-item:hover{background:var(--bg)}
+.nav-item.on{background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+.nav-item .num{width:22px;height:22px;flex:none;border-radius:7px;background:var(--bg);color:var(--ink-3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.nav-item.on .num{background:var(--accent);color:#fff}
+.nav-item.done .num::after{content:"✓"}
+.nav-item.done .num{background:var(--ok);color:#fff}
+.nav-item.done .num{font-size:0}
+.nav-item.done .num::after{font-size:12px}
+.main{min-width:0}
+.lesson{display:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:24px 26px}
+.lesson.active{display:block}
+.lesson h2{font-size:21px;margin-bottom:4px}
+.lesson .lead{color:var(--ink-2);font-size:15px;margin-bottom:16px}
+.lesson h3{font-size:15px;margin:18px 0 8px;color:var(--ink)}
+.lesson p{font-size:14.5px;color:var(--ink-2);margin-bottom:10px}
+.lesson p b, .lesson li b{color:var(--ink)}
+.lesson ul{margin:6px 0 12px 20px;color:var(--ink-2);font-size:14.5px}
+.lesson li{margin-bottom:4px}
+/* ===== 代码块 ===== */
+pre.hl{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:14px 16px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.7;margin:8px 0 14px}
+.hl .k{color:var(--kw)} .hl .s{color:var(--str)} .hl .n{color:var(--num)} .hl .c{color:var(--cmt);font-style:italic} .hl .f{color:var(--fn)}
+/* ===== 交互演示 ===== */
+.demo{border:1px solid var(--line);border-radius:var(--r-md);padding:14px;margin:14px 0 6px;background:#FBFCFE}
+.demo-label{font-size:12px;color:var(--accent-ink);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.demo-label::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--accent)}
+.controls{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:10px}
+.controls label{font-size:13px;color:var(--ink-2)}
+.controls input[type=number],.controls input[type=text]{
+  width:96px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:14px;outline:0;background:#fff
+}
+.controls input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,84,208,.12)}
+.controls input[type=range]{width:130px;accent-color:var(--accent)}
+.val-badge{font-size:13px;font-weight:600;color:var(--accent-ink);min-width:34px;display:inline-block}
+.run{
+  border:0;background:var(--accent);color:#fff;border-radius:10px;padding:9px 18px;font-size:14px;font-weight:600;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:filter .12s
+}
+.run:hover{filter:brightness(1.07)}
+.run svg{width:12px;height:12px}
+.console{
+  background:var(--code-bg);color:#CBE7C9;border-radius:10px;padding:12px 14px;min-height:96px;max-height:260px;
+  overflow-y:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.75;white-space:pre-wrap
+}
+.console .p{color:#6E7E96}
+.console .w{color:#E0A866}
+/* ===== 测验 ===== */
+.quiz-q{border:1px solid var(--line);border-radius:var(--r-md);padding:16px;margin-bottom:12px}
+.quiz-q .q-title{font-size:14.5px;font-weight:600;margin-bottom:10px}
+.quiz-opts{display:flex;flex-direction:column;gap:8px}
+.quiz-opt{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px;color:var(--ink-2);cursor:pointer;transition:border-color .12s,background .12s}
+.quiz-opt:hover{border-color:var(--accent)}
+.quiz-opt input{margin-top:3px;accent-color:var(--accent)}
+.quiz-opt.right{border-color:var(--ok);background:#E9F6EF;color:var(--ok);font-weight:600}
+.quiz-opt.wrong{border-color:var(--bad);background:#FBEAE4;color:var(--bad);font-weight:600}
+.quiz-opt input:disabled{cursor:default}
+.quiz-foot{display:flex;align-items:center;gap:14px;margin-top:8px}
+.score-line{font-size:14px;color:var(--ink-2)}
+.score-line b{color:var(--accent-ink);font-size:18px}
+/* ===== 小结 ===== */
+.sum-box{background:var(--accent-soft);border-radius:var(--r-md);padding:12px 16px;margin:12px 0;font-size:13.5px;color:var(--accent-ink)}
+.sum-box b{font-weight:700}
+/* ===== 自己动手 ===== */
+.tasks{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px}
+.task-tab{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 15px;font-size:13px;cursor:pointer;color:var(--ink-2);transition:all .12s}
+.task-tab:hover{border-color:var(--accent)}
+.task-tab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.task-desc{font-size:14px;color:var(--ink-2);margin-bottom:12px;line-height:1.7}
+.task-desc b{color:var(--ink)}
+.editor{width:100%;min-height:180px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--code-bg);color:#D7E0EE;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13.5px;line-height:1.75;padding:14px 16px;outline:0;resize:vertical;white-space:pre;tab-size:2}
+.editor:focus{box-shadow:0 0 0 3px rgba(37,84,208,.18)}
+.play-bar{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.run.sec{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+.run.sec:hover{filter:none;background:var(--accent-soft)}
+.play-hint{font-size:12px;color:var(--ink-3)}
+/* ===== 响应式 ===== */
+@media (max-width:820px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:static}
+  .lesson-nav{flex-direction:row;overflow-x:auto;padding-bottom:4px}
+  .nav-item{flex:none;min-height:44px;padding:12px 14px}
+  .run{min-height:44px;padding:11px 20px}
+  .wrap{padding:12px 12px 48px}
+  .lesson{padding:18px 16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="masthead">
+    <div class="brand">
+      <span class="mark">&lt;/&gt;</span>
+      程序设计基础<small>从零开始，边学边跑</small>
+    </div>
+    <div class="progress-box">
+      <span id="progressText">已学 0 / 8</span>
+      <div class="progress"><i id="progressBar"></i></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidebar" aria-label="课程目录">
+      <div class="lesson-nav" id="lessonNav"></div>
+    </nav>
+    <main class="main" id="main">
+      <section class="lesson" id="l1" data-title="什么是程序">
+        <h2>1. 什么是程序</h2>
+        <p class="lead">先搞清楚：我们到底在学什么。</p>
+        <p><b>程序</b>，就是写给计算机的一份「步骤清单」。你把一件事拆成一步一步明确的动作，计算机照着做，这就是运行程序。</p>
+        <p>计算机本身只懂 0 和 1，直接写 0101 太累，于是人们发明了<strong>接近人类语言</strong>的编程语言（C、Python 等），再由<strong>编译器/解释器</strong>把它翻译成机器能懂的指令。</p>
+        <h3>第一个程序：Hello World</h3>
+        <pre class="hl"><span class="c">/* 经典的第一个程序 */</span>
+<span class="k">#include</span> <span class="s">&lt;stdio.h&gt;</span>
+<span class="k">int</span> <span class="f">main</span>() {
+    <span class="f">printf</span>(<span class="s">"Hello, World!\n"</span>);  <span class="c">// 在屏幕上打印一行字</span>
+    <span class="k">return</span> <span class="n">0</span>;
+}</pre>
+        <div class="demo">
+          <div class="demo-label">运行一下</div>
+          <div class="controls"><button class="run" data-demo="d1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>运行</button></div>
+          <div class="console" id="c1">点击「运行」查看程序输出…</div>
+        </div>
+        <div class="sum-box"><b>要点</b>：程序 = 给计算机的步骤清单；计算机只懂二进制，编程语言靠编译器/解释器翻译；学编程就是学会把问题拆成一步步明确的动作。</div>
+      </section>
+
+      <section class="lesson" id="l2" data-title="变量与数据类型">
+        <h2>2. 变量与数据类型</h2>
+        <p class="lead">变量就是贴了标签的盒子，用来存放数据。</p>
+        <p>写程序时先在内存里放一个「盒子」，起个名字（变量名），再把数据放进去。不同种类的数据要用不同的盒子：</p>
+        <ul>
+          <li><b>int 整数</b>：18、100、-5</li>
+          <li><b>float 小数</b>：1.75、3.14</li>
+          <li><b>char 字符</b>：'A'、'好'</li>
+          <li><b>bool 真假</b>：true / false</li>
+        </ul>
+        <p>变量名要遵守规则：<b>用字母或下划线开头</b>，后面可以跟字母、数字，不能含空格或特殊符号；起有意义的名字（用 <code>age</code> 而不是 <code>a</code>）。</p>
+        <pre class="hl"><span class="k">int</span> age = <span class="n">18</span>;          <span class="c">// 整数：年龄</span>
+<span class="k">float</span> height = <span class="n">1.75</span>;   <span class="c">// 小数：身高（米）</span>
+<span class="k">char</span> grade = <span class="s">'A'</span>;      <span class="c">// 字符：等级</span></pre>
+        <div class="demo">
+          <div class="demo-label">动手试：输入你的年龄</div>
+          <div class="controls">
+            <label>age =</label>
+            <input type="number" id="i_age" value="18" min="0" max="120">
+            <button class="run" data-demo="d2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>运行</button>
+          </div>
+          <div class="console" id="c2">点击「运行」查看…</div>
+        </div>
+        <div class="sum-box"><b>要点</b>：变量 = 命名的存储位置；先定类型再赋值；int 整数、float 小数、char 单个字符；变量名要见名知意、不能以数字开头。</div>
+      </section>
+
+      <section class="lesson" id="l3" data-title="运算符">
+        <h2>3. 运算符与表达式</h2>
+        <p class="lead">程序做计算，全靠运算符。</p>
+        <p>四则运算 <code>+ - * /</code> 很好懂，注意两个坑：</p>
+        <ul>
+          <li>整数除法会<strong>丢掉小数</strong>：10 / 3 结果是 3，不是 3.33</li>
+          <li><code>%</code> 是<strong>取余数</strong>，判断奇偶、分组都靠它：10 % 3 = 1</li>
+        </ul>
+        <pre class="hl"><span class="k">int</span> a = <span class="n">10</span>, b = <span class="n">3</span>;
+a + b;   <span class="c">// 13</span>
+a / b;   <span class="c">// 3 （整数除法）</span>
+a % b;   <span class="c">// 1 （余数）</span></pre>
+        <div class="demo">
+          <div class="demo-label">动手试：填两个数，看六种运算结果</div>
+          <div class="controls">
+            <label>a =</label><input type="number" id="i_a" value="10">
+            <label>b =</label><input type="number" id="i_b" value="3">
+            <button class="run" data-demo="d3"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>运行</button>
+          </div>
+          <div class="console" id="c3">点击「运行」查看…</div>
+        </div>
+        <div class="sum-box"><b>要点</b>：整数除法丢掉小数；<code>%</code> 取余数常用于判断奇偶；<code>i++</code> 等价 <code>i=i+1</code>，<code>+=</code> 是累加简写；运算顺序和数学一样，括号最优先。</div>
+      </section>
+
+      <section class="lesson" id="l4" data-title="条件判断">
+        <h2>4. 条件判断 if / else</h2>
+        <p class="lead">让程序学会「看情况办事」。</p>
+        <p>程序可以根据条件选择走哪条路：条件成立走这条路，不成立走另一条。</p>
+        <pre class="hl"><span class="k">if</span> (score &gt;= <span class="n">60</span>) {
+    <span class="f">printf</span>(<span class="s">"及格了\n"</span>);
+} <span class="k">else</span> {
+    <span class="f">printf</span>(<span class="s">"继续加油\n"</span>);
+}</pre>
+        <div class="demo">
+          <div class="demo-label">动手试：拖动分数，看程序怎么判断</div>
+          <div class="controls">
+            <label>score =</label>
+            <input type="range" id="i_score" min="0" max="100" value="75">
+            <span class="val-badge" id="v_score">75</span>
+            <button class="run" data-demo="d4"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>运行</button>
+          </div>
+          <div class="console" id="c4">点击「运行」查看…</div>
+        </div>
+        <div class="sum-box"><b>要点</b>：<code>if</code> 判断条件，成立走 if 分支，不成立走 else；多级判断用 <code>else if</code>；比较符 <code>&gt; &gt;= &lt; &lt;= == !=</code> 别忘了两个等号 <code>==</code>。</div>
+      </section>
+
+      <section class="lesson" id="l5" data-title="循环">
+        <h2>5. 循环 for / while</h2>
+        <p class="lead">重复的事，交给循环。</p>
+        <p>知道重复几次用 <code>for</code>；不知道次数、条件成立就继续用 <code>while</code>。比如累加 1 到 n：</p>
+        <pre class="hl"><span class="k">int</span> sum = <span class="n">0</span>;
+<span class="k">for</span> (<span class="k">int</span> i = <span class="n">1</span>; i &lt;= n; i++) {
+    sum = sum + i;   <span class="c">// 每轮把 i 加进 sum</span>
+}</pre>
+        <div class="demo">
+          <div class="demo-label">动手试：设置循环次数，观察累加过程</div>
+          <div class="controls">
+            <label>n =</label>
+            <input type="range" id="i_n" min="1" max="15" value="5">
+            <span class="val-badge" id="v_n">5</span>
+            <button class="run" data-demo="d5"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>运行</button>
+          </div>
+          <div class="console" id="c5">点击「运行」查看…</div>
+        </div>
+        <div class="sum-box"><b>要点</b>：知道次数用 <code>for</code>，不确定次数用 <code>while</code>；循环三要素——初值、条件、步进；<code>break</code> 提前跳出、<code>continue</code> 跳过本轮；小心条件写错导致死循环。</div>
+      </section>
+
+      <section class="lesson" id="l6" data-title="函数">
+        <h2>6. 函数</h2>
+        <p class="lead">把一段功能打包，起个名字，随用随取。</p>
+        <p>函数 = <b>输入 → 加工 → 返回结果</b>。写一次，到处调用，不用重复粘贴代码。</p>
+        <pre class="hl"><span class="k">int</span> <span class="f">square</span>(<span class="k">int</span> x) {
+    <span class="k">return</span> x * x;
+}
+<span class="k">int</span> r = <span class="f">square</span>(<span class="n">5</span>);   <span class="c">// r = 25</span></pre>
+        <div class="demo">
+          <div class="demo-label">动手试：调用 square(x)</div>
+          <div class="controls">
+            <label>x =</label><input type="number" id="i_x" value="6">
+            <button class="run" data-demo="d6"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>运行</button>
+          </div>
+          <div class="console" id="c6">点击「运行」查看…</div>
+        </div>
+        <div class="sum-box"><b>要点</b>：函数 = 输入参数 → return 结果；可以有多个参数；返回值用 <code>return</code>，不写就没有返回值；把重复的逻辑封装成函数，主程序才清爽。</div>
+      </section>
+
+      <section class="lesson" id="l7" data-title="数组">
+        <h2>7. 数组</h2>
+        <p class="lead">一排编号的盒子，数据排队存放。</p>
+        <p>数组用下标存取数据，<strong>下标从 0 开始</strong>：第 0 个、第 1 个……批量数据就该用它，而不是各起一个变量。</p>
+        <pre class="hl"><span class="k">int</span> scores[<span class="n">5</span>] = {<span class="n">85</span>, <span class="n">90</span>, <span class="n">78</span>, <span class="n">92</span>, <span class="n">88</span>};
+scores[<span class="n">0</span>]   <span class="c">// 85</span>
+scores[<span class="n">4</span>]   <span class="c">// 88</span></pre>
+        <div class="demo">
+          <div class="demo-label">运行：求这组成绩的平均值与最高分</div>
+          <div class="controls"><button class="run" data-demo="d7"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg>运行</button></div>
+          <div class="console" id="c7">点击「运行」查看…</div>
+        </div>
+        <div class="sum-box"><b>要点</b>：数组是一排连续存放的数据；下标从 0 开始；用循环遍历数组求和、找最大最小是最常见的用法。</div>
+      </section>
+
+      <section class="lesson" id="l8" data-title="小测验">
+        <h2>8. 小测验</h2>
+        <p class="lead">8 道选择题，检验一下前面学的。</p>
+        <div id="quizBox"></div>
+        <div class="quiz-foot">
+          <button class="run" id="quizSubmit">提交答案</button>
+          <span class="score-line" id="quizScore">尚未作答</span>
+        </div>
+      </section>
+
+      <section class="lesson" id="l9" data-title="自己动手">
+        <h2>9. 自己动手写代码</h2>
+        <p class="lead">看十遍不如跑一遍：在下面的编辑器里改代码，点运行看结果。</p>
+        <p>这是一个能在浏览器里直接运行的小代码环境。用 <code>console.log(…)</code> 把结果打印出来；左侧是代码，右侧/下方是输出。下面 5 个练习由易到难，每个都给了起步代码，先点运行看懂，再动手改。</p>
+        <div class="tasks" id="taskTabs" role="tablist" aria-label="练习选择"></div>
+        <div class="task-desc" id="taskDesc"></div>
+        <textarea class="editor" id="codeEditor" spellcheck="false" autocapitalize="off" autocorrect="off" aria-label="代码编辑器"></textarea>
+        <div class="play-bar">
+          <button type="button" class="run" id="runCode"><svg viewBox="0 0 24 24" fill="currentColor" style="width:12px;height:12px"><path d="M6 4l14 8-14 8z"/></svg>运行</button>
+          <button type="button" class="run sec" id="resetCode">重置本练习</button>
+          <span class="play-hint" id="playHint">提示：改完点「运行」；用 console.log 打印结果</span>
+        </div>
+        <div class="console" id="c9" style="margin-top:10px">// 点击「运行」看结果…</div>
+      </section>
+    </main>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" style="position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(18px);background:#182230;color:#fff;padding:10px 20px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:50">已记录学习进度</div>
+<script>
+"use strict";
+/* ================= 数据 ================= */
+const QUIZ = [
+  { q:"程序本质上是什么？", opts:["一种硬件设备","给计算机的一系列指令","一种操作系统","一种网页"], a:1 },
+  { q:"下列哪个是整数类型？", opts:["float","char","int","bool"], a:2 },
+  { q:"int a = 10, b = 3; 那么 a / b 的结果是？", opts:["3.33","3","1","3.3"], a:1 },
+  { q:"表达式 10 % 3 的结果是？", opts:["3","3.3","1","0"], a:2 },
+  { q:"for (i=1; i<=5; i++) 这个循环体一共执行几次？", opts:["4次","5次","6次","无限次"], a:1 },
+  { q:"if (score >= 60) 的含义是？", opts:["分数小于60时执行","分数大于60时执行","分数等于60时执行","分数大于等于60时执行"], a:3 },
+  { q:"数组 scores[5] = {85,90,78,92,88}; 第一个元素 scores[0] 是？", opts:["90","85","88","78"], a:1 },
+  { q:"函数的主要作用是？", opts:["让程序变快","打包一段功能以便复用","显示文字","存储数据"], a:1 }
+];
+const STORE_KEY = "pjb_basics_v1";
+const TOTAL = 9;
+
+/* ================= 工具 ================= */
+function $(id){ return document.getElementById(id); }
+function printC(id, lines){
+  const el=$(id);
+  el.innerHTML = lines.map(function(l){
+    if(typeof l==="object") return '<span class="'+(l[1]||"")+'">'+l[0]+'</span>';
+    return l;
+  }).join("\n");
+}
+function toast(msg){
+  const t=$("toast"); t.textContent=msg; t.style.opacity="1";
+  clearTimeout(t._t); t._t=setTimeout(function(){ t.style.opacity="0"; },1600);
+}
+function loadState(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||{viewed:[],score:null}; }catch(e){ return {viewed:[],score:null}; } }
+function saveState(s){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }catch(e){} }
+
+/* ================= 导航与进度 ================= */
+const lessons=[...document.querySelectorAll(".lesson")];
+const state=loadState();
+function buildNav(){
+  $("lessonNav").innerHTML = lessons.map(function(l,i){
+    return '<button type="button" class="nav-item" data-i="'+i+'"><span class="num">'+(i+1)+'</span>'+l.dataset.title+'</button>';
+  }).join("");
+}
+function show(i){
+  lessons.forEach(function(l,j){ l.classList.toggle("active", j===i); });
+  document.querySelectorAll(".nav-item").forEach(function(b,j){ b.classList.toggle("on", j===i); });
+  const id=lessons[i].id;
+  if(state.viewed.indexOf(id)<0){ state.viewed.push(id); saveState(state); }
+  renderProgress();
+}
+function renderProgress(){
+  const done=Math.min(state.viewed.length, TOTAL);
+  $("progressText").textContent="已学 "+done+" / "+TOTAL;
+  $("progressBar").style.width=Math.round(done/TOTAL*100)+"%";
+  document.querySelectorAll(".nav-item").forEach(function(b,i){
+    b.classList.toggle("done", state.viewed.indexOf(lessons[i].id)>=0);
+  });
+}
+$("lessonNav").addEventListener("click", function(e){
+  const b=e.target.closest(".nav-item"); if(!b) return;
+  show(Number(b.dataset.i));
+});
+
+/* ================= 演示逻辑 ================= */
+const DEMOS = {
+  d1:function(){
+    printC("c1", [
+      [".> 编译 main.c …", "p"],
+      [".> 运行程序", "p"],
+      ["Hello, World!"],
+      [".> 程序正常结束，return 0", "p"]
+    ]);
+  },
+  d2:function(){
+    const age=Number($("i_age").value)||0;
+    printC("c2", [
+      ["int age = "+age+";"],
+      ["变量名：age"],
+      ["数据类型：int（整数）"],
+      ["存储的值："+age],
+      [".> age + 1 = "+(age+1), "w"]
+    ]);
+  },
+  d3:function(){
+    const a=Number($("i_a").value)||0, b=Number($("i_b").value)||0;
+    printC("c3", [
+      ["int a = "+a+", b = "+b+";"],
+      ["a + b = "+(a+b)],
+      ["a - b = "+(a-b)],
+      ["a * b = "+(a*b)],
+      ["a / b = "+(b===0?"（b 不能为 0）":Math.trunc(a/b))],
+      ["a % b = "+(b===0?"（b 不能为 0）":a%b)],
+      [".> 注意：整数除法会丢掉小数部分", "p"]
+    ]);
+  },
+  d4:function(){
+    const s=Number($("i_score").value);
+    let level, go;
+    if(s>=90){ level="优秀"; go="进前 10%！"; }
+    else if(s>=75){ level="良好"; go="稳扎稳打。"; }
+    else if(s>=60){ level="及格"; go="刚好过线，继续努力。"; }
+    else{ level="不及格"; go="别灰心，再练一遍。"; }
+    printC("c4", [
+      ["score = "+s],
+      ["if (score >= 60) {  … }  ← 条件成立："+(s>=60?"是":"否")],
+      ["判断结果："+level],
+      [".> "+go, "p"]
+    ]);
+  },
+  d5:function(){
+    const n=Number($("i_n").value);
+    const lines=[]; let sum=0;
+    for(let i=1;i<=n;i++){ sum+=i; lines.push("第 "+i+" 轮：sum = "+sum); }
+    lines.push([".> 1 到 "+n+" 的累加和 = "+sum, "w"]);
+    printC("c5", lines);
+  },
+  d6:function(){
+    const x=Number($("i_x").value)||0;
+    printC("c6", [
+      [".> 调用 square("+x+")", "p"],
+      ["进入函数：x = "+x],
+      ["return x * x = "+(x*x)],
+      [".> 回到主程序，r = "+(x*x), "w"]
+    ]);
+  },
+  d7:function(){
+    const arr=[85,90,78,92,88];
+    let sum=0, max=-Infinity, min=Infinity;
+    arr.forEach(function(v){ sum+=v; if(v>max)max=v; if(v<min)min=v; });
+    printC("c7", [
+      ["int scores[5] = {"+arr.join(", ")+"};"],
+      ["元素个数："+arr.length],
+      ["总和："+sum],
+      ["平均值："+(sum/arr.length).toFixed(1)],
+      ["最高分："+max+"（下标 "+arr.indexOf(max)+"）"],
+      ["最低分："+min+"（下标 "+arr.indexOf(min)+"）"]
+    ]);
+  }
+};
+document.querySelectorAll(".run[data-demo]").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    const k=btn.dataset.demo;
+    if(DEMOS[k]){ DEMOS[k](); showViewed(k); }
+  });
+});
+function showViewed(k){
+  const map={d1:"l1",d2:"l2",d3:"l3",d4:"l4",d5:"l5",d6:"l6",d7:"l7"};
+  const id=map[k];
+  if(id && state.viewed.indexOf(id)<0){ state.viewed.push(id); saveState(state); renderProgress(); }
+}
+/* 滑块实时显示 */
+[["i_score","v_score"],["i_n","v_n"]].forEach(function(pair){
+  $(pair[0]).addEventListener("input", function(){ $(pair[1]).textContent=this.value; });
+});
+
+/* ================= 测验 ================= */
+function buildQuiz(){
+  $("quizBox").innerHTML = QUIZ.map(function(q,qi){
+    return '<div class="quiz-q" data-q="'+qi+'"><div class="q-title">'+(qi+1)+". "+q.q+'</div><div class="quiz-opts">'
+      + q.opts.map(function(o,oi){
+        return '<label class="quiz-opt"><input type="radio" name="q'+qi+'" value="'+oi+'"><span>'+String.fromCharCode(65+oi)+". "+o+'</span></label>';
+      }).join("")
+      +'</div></div>';
+  }).join("");
+}
+$("quizSubmit").addEventListener("click", function(){
+  let score=0, unanswered=0;
+  QUIZ.forEach(function(q,qi){
+    const picked=document.querySelector('input[name="q'+qi+'"]:checked');
+    const opts=document.querySelectorAll('.quiz-q[data-q="'+qi+'"] .quiz-opt');
+    opts.forEach(function(el){ el.querySelector("input").disabled=true; });
+    if(!picked){ unanswered++; return; }
+    const pick=Number(picked.value);
+    if(pick===q.a){ score++; opts[pick].classList.add("right"); }
+    else{ opts[pick].classList.add("wrong"); opts[q.a].classList.add("right"); }
+  });
+  const total=QUIZ.length;
+  $("quizScore").innerHTML="得分 <b>"+score+"</b> / "+total+(unanswered?("（还有 "+unanswered+" 题未答）"):"");
+  if(state.viewed.indexOf("l8")<0){ state.viewed.push("l8"); saveState(state); renderProgress(); }
+  toast(score===total?"满分，很棒！":"已批改");
+});
+
+/* ================= 自己动手：代码练习 ================= */
+const TASKS = [
+  {
+    title:"1. 打印问候",
+    desc:"<b>题目：</b>在屏幕上打印一句问候语。<br><b>练什么：</b>认识 <code>console.log()</code> 和字符串。把下面引号里的话改成你自己的。",
+    hint:"用双引号把文字包起来；每行末尾写分号 ;",
+    starter:"console.log(\"你好，世界！\");\n\n// 试着改成你自己的名字：\nconsole.log(\"你好，我是小明\");"
+  },
+  {
+    title:"2. 计算 BMI",
+    desc:"<b>题目：</b>已知体重 65 公斤、身高 1.75 米，算出 BMI = 体重 ÷ 身高²。<br><b>练什么：</b>变量、乘法、除法。",
+    hint:"身高平方就是 身高 * 身高；BMI 约等于 21.2",
+    starter:"var weight = 65;\nvar height = 1.75;\n\n// 算出 BMI：\nvar bmi = weight / (height * height);\n\nconsole.log(\"你的 BMI 是：\");\nconsole.log(bmi);"
+  },
+  {
+    title:"3. 判断奇偶",
+    desc:"<b>题目：</b>给一个数 n，判断它是奇数还是偶数。<br><b>练什么：</b>取余 % 和 if/else。",
+    hint:"偶数除以 2 余数为 0：n % 2 === 0",
+    starter:"var n = 7;\n\nif (n % 2 === 0) {\n  console.log(n + \" 是偶数\");\n} else {\n  console.log(n + \" 是奇数\");\n}\n\n// 改成别的数再跑一遍，比如 n = 8;"
+  },
+  {
+    title:"4. 1 到 100 累加",
+    desc:"<b>题目：</b>用循环把 1 到 100 全部加起来，打印结果（正确答案是 5050）。<br><b>练什么：</b>for 循环、累加器。",
+    hint:"for (var i=1; i<=100; i++) { sum = sum + i; }",
+    starter:"var sum = 0;\n\n// 在下面写循环：\n\n\n\nconsole.log(\"1 到 100 的和是：\" + sum);"
+  },
+  {
+    title:"5. 找最大数",
+    desc:"<b>题目：</b>数组 [12, 45, 7, 89, 23]，找出最大的数并打印（答案是 89）。<br><b>练什么：</b>数组、遍历、打擂台。",
+    hint:"先假设第一个最大，再逐个比较替换",
+    starter:"var arr = [12, 45, 7, 89, 23];\nvar max = arr[0];\n\n// 遍历数组，遇到更大的就替换：\n\n\n\nconsole.log(\"最大的数是：\" + max);"
+  }
+];
+let curTask = 0;
+function fmtVal(v){
+  if(typeof v === "string") return v;
+  if(typeof v === "object" && v !== null){ try{ return JSON.stringify(v); }catch(e){ return String(v); } }
+  return String(v);
+}
+function buildTasks(){
+  $("taskTabs").innerHTML = TASKS.map(function(t,i){
+    return '<button type="button" class="task-tab'+(i===0?" on":"")+'" data-i="'+i+'">'+t.title+'</button>';
+  }).join("");
+  loadTask(0);
+}
+function loadTask(i){
+  curTask = i;
+  const t = TASKS[i];
+  $("taskTabs").querySelectorAll(".task-tab").forEach(function(b,j){ b.classList.toggle("on", j===i); });
+  $("taskDesc").innerHTML = t.desc + '<br><span style="color:var(--ink-3);font-size:12.5px">提示：'+t.hint+'</span>';
+  $("codeEditor").value = t.starter;
+  $("playHint").textContent = "提示："+t.hint;
+  printC("c9", ["// 已载入「"+t.title.replace(/^\d+\.\s*/,"")+"」的起步代码，改完点运行…"]);
+}
+function runUserCode(){
+  const code = $("codeEditor").value;
+  const logs = [];
+  const fakeLog = function(){ for(let k=0;k<arguments.length;k++) logs.push(fmtVal(arguments[k])); };
+  try{
+    const fn = new Function("console", code);
+    fn({ log:fakeLog });
+  }catch(err){
+    logs.push("出错了：" + err.message);
+  }
+  if(!logs.length) logs.push("（没有输出——记得用 console.log(...) 打印你想看到的结果）");
+  printC("c9", logs);
+  if(state.viewed.indexOf("l9")<0){ state.viewed.push("l9"); saveState(state); renderProgress(); }
+}
+$("taskTabs").addEventListener("click", function(e){
+  const b = e.target.closest(".task-tab"); if(!b) return;
+  loadTask(Number(b.dataset.i));
+});
+$("runCode").addEventListener("click", runUserCode);
+$("resetCode").addEventListener("click", function(){ loadTask(curTask); toast("已重置为本练习的初始代码"); });
+
+/* ================= 初始化 ================= */
+buildNav();
+buildQuiz();
+buildTasks();
+show(0);
+</script>
+</body>
+</html>
