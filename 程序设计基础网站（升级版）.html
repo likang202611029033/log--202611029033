@@ -1,0 +1,990 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C++ 程序设计基础 · 从入门到类与对象</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%232563eb'/><text x='50' y='68' font-size='52' font-family='monospace' font-weight='bold' fill='white' text-anchor='middle'>&lt;/&gt;</text></svg>">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --sidebar-bg:#0f172a;
+  --sidebar-fg:#cbd5e1;
+  --sidebar-active:#2563eb;
+  --bg:#f8fafc;
+  --fg:#0f172a;
+  --fg-soft:#475569;
+  --line:#e2e8f0;
+  --accent:#2563eb;
+  --accent-soft:#dbeafe;
+  --code-bg:#1e1e2e;
+  --code-fg:#cdd6f4;
+  --warn-bg:#fef3c7;
+  --warn-border:#f59e0b;
+  --tip-bg:#dcfce7;
+  --tip-border:#16a34a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Noto Sans SC",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--fg);line-height:1.75;
+  font-size:16px;
+}
+code,pre,.mono{font-family:"JetBrains Mono",Consolas,"Courier New",monospace}
+
+/* ===== 布局 ===== */
+.layout{display:flex;min-height:100vh}
+.sidebar{
+  width:280px;flex-shrink:0;background:var(--sidebar-bg);color:var(--sidebar-fg);
+  position:fixed;top:0;left:0;bottom:0;overflow-y:auto;
+  padding:24px 0;z-index:50;transition:transform .25s;
+}
+.brand{padding:0 24px 20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.brand h1{color:#fff;font-size:18px;font-weight:700;letter-spacing:.5px}
+.brand p{font-size:12px;color:#94a3b8;margin-top:4px}
+.nav-label{padding:8px 24px;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#64748b;margin-top:12px}
+.nav a{
+  display:flex;align-items:center;gap:10px;padding:9px 24px;color:var(--sidebar-fg);
+  text-decoration:none;font-size:14px;border-left:3px solid transparent;transition:all .15s;
+}
+.nav a:hover{background:rgba(255,255,255,.05);color:#fff}
+.nav a.active{background:rgba(37,99,235,.18);color:#fff;border-left-color:var(--sidebar-active)}
+.nav a .num{
+  font-family:"JetBrains Mono",monospace;font-size:11px;color:#64748b;
+  min-width:22px;
+}
+.nav a.active .num{color:#93c5fd}
+
+.main{flex:1;margin-left:280px;padding:40px 48px 80px;max-width:920px}
+
+/* ===== 移动端顶栏 ===== */
+.topbar{display:none;position:sticky;top:0;background:var(--sidebar-bg);color:#fff;
+  padding:12px 16px;align-items:center;justify-content:space-between;z-index:40}
+.topbar button{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;
+  padding:6px 12px;border-radius:6px;cursor:pointer;font-size:14px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:45}
+
+/* ===== 内容 ===== */
+.view{display:none;animation:fade .25s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+.chapter-tag{display:inline-block;font-size:12px;color:var(--accent);background:var(--accent-soft);
+  padding:3px 10px;border-radius:99px;font-weight:500;margin-bottom:12px}
+h2.chapter-title{font-size:32px;font-weight:700;line-height:1.3;margin-bottom:8px}
+.chapter-sub{color:var(--fg-soft);margin-bottom:32px;font-size:15px}
+h3{font-size:20px;font-weight:700;margin:36px 0 12px;padding-left:12px;border-left:4px solid var(--accent)}
+h4{font-size:16px;font-weight:700;margin:20px 0 8px}
+p{margin:10px 0;color:#334155}
+ul,ol{margin:10px 0 10px 24px;color:#334155}
+li{margin:6px 0}
+strong{color:var(--fg)}
+a.inline{color:var(--accent);text-decoration:none;border-bottom:1px solid var(--accent-soft)}
+a.inline:hover{border-bottom-color:var(--accent)}
+
+/* 代码块 */
+pre{
+  background:var(--code-bg);color:var(--code-fg);padding:18px 20px;border-radius:10px;
+  overflow-x:auto;font-size:13.5px;line-height:1.7;margin:14px 0;
+}
+pre code{font-family:inherit}
+.kw{color:#c084fc}.type{color:#7dd3fc}.str{color:#a5d6a7}.cm{color:#64748b;font-style:italic}
+.fn{color:#fbbf24}.num{color:#fca5a5}.pp{color:#f9a8d4}
+code.inline{
+  background:#eef2ff;color:#3730a3;padding:2px 6px;border-radius:4px;font-size:.9em;
+}
+
+/* 提示框 */
+.box{padding:14px 18px;border-radius:8px;margin:16px 0;font-size:14.5px;border-left:4px solid}
+.box.tip{background:var(--tip-bg);border-color:var(--tip-border)}
+.box.warn{background:var(--warn-bg);border-color:var(--warn-border)}
+.box .label{font-weight:700;display:block;margin-bottom:4px}
+
+/* 学习目标 / 小结 */
+.objectives{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 22px;margin:18px 0}
+.objectives .title{font-weight:700;color:var(--accent);margin-bottom:8px;font-size:14px}
+.objectives ul{margin:0 0 0 20px}
+
+/* 上下章导航 */
+.pager{display:flex;justify-content:space-between;margin-top:56px;padding-top:24px;border-top:1px solid var(--line);gap:16px}
+.pager a{
+  flex:1;text-decoration:none;padding:16px 20px;border:1px solid var(--line);border-radius:10px;
+  background:#fff;color:var(--fg);transition:all .15s;
+}
+.pager a:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(37,99,235,.1)}
+.pager a.next{text-align:right}
+.pager .dir{font-size:12px;color:var(--fg-soft);display:block}
+.pager .name{font-weight:700;color:var(--accent);margin-top:4px}
+
+/* 首页 hero */
+.hero{padding:40px 0 20px}
+.hero h2{font-size:42px;line-height:1.2;font-weight:700;margin-bottom:16px}
+.hero h2 .accent{color:var(--accent)}
+.hero p.lead{font-size:17px;color:var(--fg-soft);max-width:640px}
+.stats{display:flex;gap:32px;margin:32px 0;flex-wrap:wrap}
+.stat .v{font-size:28px;font-weight:700;color:var(--accent)}
+.stat .l{font-size:13px;color:var(--fg-soft)}
+.chapter-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:20px}
+.chapter-card{
+  display:block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 20px;
+  text-decoration:none;color:var(--fg);transition:all .15s;
+}
+.chapter-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 6px 18px rgba(37,99,235,.1)}
+.chapter-card .n{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--accent);font-weight:600}
+.chapter-card .t{font-weight:700;margin:6px 0 4px}
+.chapter-card .d{font-size:13px;color:var(--fg-soft)}
+
+/* 表格 */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;background:#fff}
+th,td{border:1px solid var(--line);padding:9px 12px;text-align:left}
+th{background:#f1f5f9;font-weight:600}
+
+/* 进度条 */
+.progress-bar{position:sticky;top:0;height:3px;background:transparent;z-index:30;margin:-40px -48px 24px}
+.progress-bar .fill{height:100%;background:var(--accent);width:0;transition:width .2s}
+
+@media (max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none}
+  .main{margin-left:0;padding:20px 18px 60px}
+  .topbar{display:flex}
+  .overlay.show{display:block}
+  .hero h2{font-size:30px}
+  .chapter-grid{grid-template-columns:1fr}
+  h2.chapter-title{font-size:26px}
+  .progress-bar{margin:-20px -18px 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <strong>C++ 程序设计基础</strong>
+  <button id="menuBtn">目录</button>
+</div>
+
+<div class="layout">
+  <!-- ===== 侧边栏 ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <h1>C++ 程序设计基础</h1>
+      <p>从零基础到类与对象 · 共 11 章</p>
+    </div>
+    <nav class="nav" id="nav">
+      <a href="#/home" data-route="home"><span class="num">00</span>课程首页</a>
+      <div class="nav-label">基础篇</div>
+      <a href="#/chapter/1" data-route="ch-1"><span class="num">01</span>C++ 简介与环境搭建</a>
+      <a href="#/chapter/2" data-route="ch-2"><span class="num">02</span>第一个 C++ 程序</a>
+      <a href="#/chapter/3" data-route="ch-3"><span class="num">03</span>数据类型与变量</a>
+      <a href="#/chapter/4" data-route="ch-4"><span class="num">04</span>运算符与表达式</a>
+      <a href="#/chapter/5" data-route="ch-5"><span class="num">05</span>输入与输出</a>
+      <div class="nav-label">控制流篇</div>
+      <a href="#/chapter/6" data-route="ch-6"><span class="num">06</span>分支语句</a>
+      <a href="#/chapter/7" data-route="ch-7"><span class="num">07</span>循环语句</a>
+      <div class="nav-label">数据组织篇</div>
+      <a href="#/chapter/8" data-route="ch-8"><span class="num">08</span>数组与字符串</a>
+      <a href="#/chapter/9" data-route="ch-9"><span class="num">09</span>函数</a>
+      <div class="nav-label">进阶篇</div>
+      <a href="#/chapter/10" data-route="ch-10"><span class="num">10</span>指针与引用</a>
+      <a href="#/chapter/11" data-route="ch-11"><span class="num">11</span>类与对象入门</a>
+    </nav>
+  </aside>
+  <div class="overlay" id="overlay"></div>
+
+  <!-- ===== 主内容区 ===== -->
+  <main class="main">
+    <div class="progress-bar"><div class="fill" id="progressFill"></div></div>
+
+    <!-- ========== 首页 ========== -->
+    <section class="view" id="view-home">
+      <div class="hero">
+        <span class="chapter-tag">在线教程</span>
+        <h2>从零开始，<br>系统掌握 <span class="accent">C++ 程序设计基础</span></h2>
+        <p class="lead">本教程按照大学程序设计课程的教学顺序编排，共 11 章。每一章都包含学习目标、核心知识点、可运行代码示例和小结，适合零基础读者按顺序自学。</p>
+        <div class="stats">
+          <div class="stat"><div class="v">11</div><div class="l">章节</div></div>
+          <div class="stat"><div class="v">60+</div><div class="l">代码示例</div></div>
+          <div class="stat"><div class="v">5h</div><div class="l">预计学时</div></div>
+        </div>
+      </div>
+
+      <h3 style="border:none;padding:0;margin:32px 0 12px">章节导航</h3>
+      <div class="chapter-grid">
+        <a class="chapter-card" href="#/chapter/1"><div class="n">第 01 章</div><div class="t">C++ 简介与环境搭建</div><div class="d">了解 C++ 的历史与应用，安装编译器与 IDE</div></a>
+        <a class="chapter-card" href="#/chapter/2"><div class="n">第 02 章</div><div class="t">第一个 C++ 程序</div><div class="d">main 函数、头文件、编译运行 Hello World</div></a>
+        <a class="chapter-card" href="#/chapter/3"><div class="n">第 03 章</div><div class="t">数据类型与变量</div><div class="d">整型、浮点型、字符型、常量与作用域</div></a>
+        <a class="chapter-card" href="#/chapter/4"><div class="n">第 04 章</div><div class="t">运算符与表达式</div><div class="d">算术、赋值、关系、逻辑运算符与优先级</div></a>
+        <a class="chapter-card" href="#/chapter/5"><div class="n">第 05 章</div><div class="t">输入与输出</div><div class="d">cin / cout、格式化输出、顺序结构</div></a>
+        <a class="chapter-card" href="#/chapter/6"><div class="n">第 06 章</div><div class="t">分支语句</div><div class="d">if / else、switch 与条件判断</div></a>
+        <a class="chapter-card" href="#/chapter/7"><div class="n">第 07 章</div><div class="t">循环语句</div><div class="d">while、do-while、for 与循环控制</div></a>
+        <a class="chapter-card" href="#/chapter/8"><div class="n">第 08 章</div><div class="t">数组与字符串</div><div class="d">一维/二维数组、字符数组与 string</div></a>
+        <a class="chapter-card" href="#/chapter/9"><div class="n">第 09 章</div><div class="t">函数</div><div class="d">定义、参数传递、返回值、递归基础</div></a>
+        <a class="chapter-card" href="#/chapter/10"><div class="n">第 10 章</div><div class="t">指针与引用</div><div class="d">地址、指针变量、引用的概念与使用</div></a>
+        <a class="chapter-card" href="#/chapter/11"><div class="n">第 11 章</div><div class="t">类与对象入门</div><div class="d">面向对象思想、类、成员与构造函数</div></a>
+      </div>
+
+      <div class="pager">
+        <span></span>
+        <a class="next" href="#/chapter/1"><span class="dir">从这里开始</span><span class="name">第 1 章 →</span></a>
+      </div>
+    </section>
+
+    <!-- ========== 第 1 章 ========== -->
+    <section class="view" id="view-ch-1">
+      <span class="chapter-tag">第 1 章 · 基础篇</span>
+      <h2 class="chapter-title">C++ 简介与环境搭建</h2>
+      <p class="chapter-sub">认识这门语言，装好第一个编译器与开发工具。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>了解 C++ 的历史、特点与主要应用领域</li>
+          <li>理解「编译器」在程序开发中的作用</li>
+          <li>完成 Windows 下的编译环境搭建（推荐 Visual Studio Community 或 MinGW）</li>
+        </ul>
+      </div>
+
+      <h3>1.1 C++ 是什么</h3>
+      <p>C++ 是一门静态类型、编译型的通用程序设计语言，由 Bjarne Stroustrup 于 1979 年在 C 语言基础上扩展而来。它同时支持<strong>面向过程</strong>与<strong>面向对象</strong>两种编程范式，并对底层硬件有很强的控制力。</p>
+      <p>今天 C++ 被广泛用于：操作系统与驱动、游戏引擎（Unreal、Unity 底层）、高频交易、嵌入式系统、浏览器内核、图形图像处理等对性能要求极高的领域。</p>
+
+      <h3>1.2 开发环境的组成</h3>
+      <p>一个完整的 C++ 开发环境由两部分组成：</p>
+      <ul>
+        <li><strong>编译器</strong>：把人写的 <code class="inline">.cpp</code> 源代码翻译成机器可执行的二进制程序。Windows 上常用 MSVC（微软）或 g++（MinGW）。</li>
+        <li><strong>IDE / 编辑器</strong>：写代码、管理工程、一键编译调试的图形界面。新手推荐 Visual Studio Community，免费且集成度高。</li>
+      </ul>
+
+      <div class="box tip">
+        <span class="label">推荐方案（Windows 新手）</span>
+        下载并安装 <strong>Visual Studio Community</strong>（微软官网免费），安装时勾选「使用 C++ 的桌面开发」工作负载，它会自动装好编译器、调试器和标准库，无需额外配置。
+      </div>
+
+      <h3>1.3 编译过程一览</h3>
+      <p>一段 C++ 代码从文本到可运行程序，大致经历四个阶段：预处理 → 编译 → 汇编 → 链接。初学阶段只需记住：<strong>源代码 (.cpp) 经过编译器处理后，生成一个 .exe 可执行文件</strong>。</p>
+
+      <div class="box warn">
+        <span class="label">常见坑</span>
+        安装 Visual Studio 时如果只装了主程序而没勾选「使用 C++ 的桌面开发」，新建项目时会找不到 C++ 选项。这时可以通过「Visual Studio Installer」补充安装。
+      </div>
+
+      <h3>1.4 本章小结</h3>
+      <ul>
+        <li>C++ 是一门高效、多范式的编译型语言。</li>
+        <li>开发环境 = 编译器 + IDE，新手推荐 Visual Studio Community。</li>
+        <li>源代码必须经过编译才能变成可运行的程序。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/home"><span class="dir">← 返回</span><span class="name">课程首页</span></a>
+        <a class="next" href="#/chapter/2"><span class="dir">下一章</span><span class="name">第 2 章：第一个 C++ 程序 →</span></a>
+      </div>
+    </section>
+
+    <!-- ========== 第 2 章 ========== -->
+    <section class="view" id="view-ch-2">
+      <span class="chapter-tag">第 2 章 · 基础篇</span>
+      <h2 class="chapter-title">第一个 C++ 程序</h2>
+      <p class="chapter-sub">逐行读懂 Hello World，理解每个符号的作用。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>写出并运行第一个 C++ 程序</li>
+          <li>理解 <code class="inline">#include</code>、<code class="inline">main</code>、<code class="inline">cout</code> 的含义</li>
+          <li>掌握注释的写法与基本代码规范</li>
+        </ul>
+      </div>
+
+      <h3>2.1 Hello, World!</h3>
+      <pre><code><span class="cm">// 第一个 C++ 程序</span>
+<span class="pp">#include</span> <span class="str">&lt;iostream&gt;</span>
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    std::cout &lt;&lt; <span class="str">"Hello, World!"</span> &lt;&lt; std::endl;
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+      <h3>2.2 逐行解释</h3>
+      <table>
+        <colgroup><col style="width:32%"><col style="width:68%"></colgroup>
+        <tr><th>代码</th><th>含义</th></tr>
+        <tr><td><code class="inline">// 第一个 C++ 程序</code></td><td>单行注释，编译器会忽略它。<code class="inline">/* ... */</code> 可写多行注释。</td></tr>
+        <tr><td><code class="inline">#include &lt;iostream&gt;</code></td><td>引入输入输出头文件，之后才能使用 <code class="inline">cin</code> / <code class="inline">cout</code>。</td></tr>
+        <tr><td><code class="inline">int main()</code></td><td>主函数，程序<strong>永远从这里开始执行</strong>。每个 C++ 程序有且只有一个 main。</td></tr>
+        <tr><td><code class="inline">std::cout</code></td><td>标准输出对象，<code class="inline">&lt;&lt;</code> 是「插入符」，把后面的内容送到屏幕。</td></tr>
+        <tr><td><code class="inline">std::endl</code></td><td>输出一个换行并刷新缓冲区。</td></tr>
+        <tr><td><code class="inline">return 0;</code></td><td>告诉操作系统程序正常结束。</td></tr>
+      </table>
+
+      <h3>2.3 using namespace std 的习惯</h3>
+      <p>频繁写 <code class="inline">std::</code> 比较啰嗦，实践中常在文件开头加一行：</p>
+      <pre><code><span class="pp">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;   <span class="cm">// 引入标准库命名空间</span>
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    cout &lt;&lt; <span class="str">"你好，C++！"</span> &lt;&lt; endl;
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+      <div class="box tip">
+        <span class="label">代码规范小提示</span>
+        每条语句以分号 <code class="inline">;</code> 结束；花括号 <code class="inline">{ }</code> 通常单独占一行；适当缩进（4 个空格）让代码可读。
+      </div>
+
+      <h3>2.4 本章小结</h3>
+      <ul>
+        <li>程序入口是 <code class="inline">main()</code>。</li>
+        <li>输出文本用 <code class="inline">cout &lt;&lt; ...</code>，字符串必须放在双引号内。</li>
+        <li>注释不会被编译，用来给人读。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/1"><span class="dir">← 上一章</span><span class="name">第 1 章</span></a>
+        <a class="next" href="#/chapter/3"><span class="dir">下一章</span><span class="name">第 3 章：数据类型与变量 →</span></a>
+      </div>
+    </section>
+
+    <!-- ========== 第 3 章 ========== -->
+    <section class="view" id="view-ch-3">
+      <span class="chapter-tag">第 3 章 · 基础篇</span>
+      <h2 class="chapter-title">数据类型与变量</h2>
+      <p class="chapter-sub">程序用变量存储数据，数据有不同的类型。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>掌握基本数据类型：int、double、char、bool</li>
+          <li>学会声明变量、赋值与初始化</li>
+          <li>理解常量 const 与标识符命名规则</li>
+        </ul>
+      </div>
+
+      <h3>3.1 什么是变量</h3>
+      <p>变量是内存中的一块命名区域，用来存放程序运行时会变化的数据。声明变量时必须告诉编译器它的<strong>类型</strong>。</p>
+
+      <h3>3.2 基本数据类型</h3>
+      <table>
+        <colgroup><col style="width:18%"><col style="width:22%"><col style="width:60%"></colgroup>
+        <tr><th>类型</th><th>含义</th><th>示例</th></tr>
+        <tr><td><code class="inline">int</code></td><td>整数</td><td><code class="inline">int age = 20;</code></td></tr>
+        <tr><td><code class="inline">double</code></td><td>双精度浮点数</td><td><code class="inline">double price = 9.9;</code></td></tr>
+        <tr><td><code class="inline">float</code></td><td>单精度浮点数</td><td><code class="inline">float f = 1.5f;</code></td></tr>
+        <tr><td><code class="inline">char</code></td><td>单个字符</td><td><code class="inline">char c = 'A';</code>（单引号）</td></tr>
+        <tr><td><code class="inline">bool</code></td><td>布尔值</td><td><code class="inline">bool ok = true;</code></td></tr>
+      </table>
+
+      <h3>3.3 声明与初始化</h3>
+      <pre><code><span class="pp">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    <span class="type">int</span> age = <span class="num">18</span>;          <span class="cm">// 声明并初始化</span>
+    <span class="type">double</span> height;        <span class="cm">// 先声明</span>
+    height = <span class="num">1.75</span>;           <span class="cm">// 后赋值</span>
+    <span class="type">char</span> grade = <span class="str">'A'</span>;
+    <span class="type">bool</span> pass = <span class="kw">true</span>;
+
+    cout &lt;&lt; age &lt;&lt; endl;
+    cout &lt;&lt; height &lt;&lt; endl;
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+      <h3>3.4 常量 const</h3>
+      <p>用 <code class="inline">const</code> 修饰的变量一旦赋值就不能修改，常用于保存固定参数，避免被误改：</p>
+      <pre><code><span class="kw">const</span> <span class="type">double</span> PI = <span class="num">3.14159</span>;
+<span class="cm">// PI = 3.14;  // 编译报错：不能给 const 变量赋值</span></code></pre>
+
+      <div class="box warn">
+        <span class="label">命名规则</span>
+        变量名只能由字母、数字、下划线组成，不能以数字开头，区分大小写。习惯上变量用小写单词（如 <code class="inline">studentAge</code>），常量全大写（如 <code class="inline">MAX_SIZE</code>）。
+      </div>
+
+      <h3>3.5 本章小结</h3>
+      <ul>
+        <li>变量必须先声明类型再使用；未初始化的变量值是不确定的。</li>
+        <li>常用类型：int / double / char / bool。</li>
+        <li>const 定义只读常量。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/2"><span class="dir">← 上一章</span><span class="name">第 2 章</span></a>
+        <a class="next" href="#/chapter/4"><span class="dir">下一章</span><span class="name">第 4 章：运算符与表达式 →</span></a>
+      </div>
+    </section>
+    <!-- ========== 第 4 章 ========== -->
+    <section class="view" id="view-ch-4">
+      <span class="chapter-tag">第 4 章 · 基础篇</span>
+      <h2 class="chapter-title">运算符与表达式</h2>
+      <p class="chapter-sub">用运算符把变量和常量组合成表达式，完成计算。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>掌握算术、赋值、关系、逻辑运算符</li>
+          <li>理解运算符优先级与整数除法的陷阱</li>
+          <li>能写出常见的数值表达式</li>
+        </ul>
+      </div>
+
+      <h3>4.1 算术运算符</h3>
+      <table>
+        <colgroup><col style="width:20%"><col style="width:40%"><col style="width:40%"></colgroup>
+        <tr><th>运算符</th><th>含义</th><th>示例</th></tr>
+        <tr><td><code class="inline">+ - * /</code></td><td>加、减、乘、除</td><td><code class="inline">a + b</code></td></tr>
+        <tr><td><code class="inline">%</code></td><td>取余（取模）</td><td><code class="inline">7 % 3 == 1</code></td></tr>
+        <tr><td><code class="inline">++ --</code></td><td>自增、自减</td><td><code class="inline">i++</code></td></tr>
+      </table>
+
+      <div class="box warn">
+        <span class="label">整数除法陷阱</span>
+        两个 int 相除，结果仍是 int，小数部分被直接丢弃：<code class="inline">7 / 2 == 3</code>，不是 3.5。想要小数结果，至少有一个操作数是 double：<code class="inline">7.0 / 2 == 3.5</code>。
+      </div>
+
+      <h3>4.2 赋值与复合赋值</h3>
+      <pre><code><span class="type">int</span> x = <span class="num">10</span>;
+x += <span class="num">5</span>;   <span class="cm">// 等价 x = x + 5;  现在 x = 15</span>
+x *= <span class="num">2</span>;   <span class="cm">// x = 30</span>
+x %= <span class="num">7</span>;   <span class="cm">// x = 2</span></code></pre>
+
+      <h3>4.3 关系与逻辑运算符</h3>
+      <table>
+        <colgroup><col style="width:25%"><col style="width:35%"><col style="width:40%"></colgroup>
+        <tr><th>类别</th><th>运算符</th><th>结果</th></tr>
+        <tr><td>关系</td><td><code class="inline">&gt; &gt;= &lt; &lt;= == !=</code></td><td>true / false</td></tr>
+        <tr><td>逻辑</td><td><code class="inline">&amp;&amp;（与） ||（或） !（非）</code></td><td>true / false</td></tr>
+      </table>
+
+      <pre><code><span class="type">int</span> age = <span class="num">20</span>;
+<span class="kw">bool</span> isAdult = age &gt;= <span class="num">18</span>;          <span class="cm">// true</span>
+<span class="kw">bool</span> canDrive = (age &gt;= <span class="num">18</span>) &amp;&amp; (age &lt; <span class="num">70</span>);  <span class="cm">// true</span></code></pre>
+
+      <div class="box tip">
+        <span class="label">注意区分</span>
+        赋值是 <code class="inline">=</code>，判断相等是 <code class="inline">==</code>。写成 <code class="inline">if (x = 5)</code> 在 C++ 中是合法但危险的写法，初学者务必看清楚。
+      </div>
+
+      <h3>4.4 本章小结</h3>
+      <ul>
+        <li>注意整数除法会截断小数。</li>
+        <li>关系/逻辑运算结果是 bool 值。</li>
+        <li>牢记 <code class="inline">=</code> 与 <code class="inline">==</code> 的区别。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/3"><span class="dir">← 上一章</span><span class="name">第 3 章</span></a>
+        <a class="next" href="#/chapter/5"><span class="dir">下一章</span><span class="name">第 5 章：输入与输出 →</span></a>
+      </div>
+    </section>
+
+    <!-- ========== 第 5 章 ========== -->
+    <section class="view" id="view-ch-5">
+      <span class="chapter-tag">第 5 章 · 基础篇</span>
+      <h2 class="chapter-title">输入与输出</h2>
+      <p class="chapter-sub">让程序能接收用户输入，并把结果打印出来。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>使用 <code class="inline">cin</code> 读取键盘输入</li>
+          <li>使用 <code class="inline">cout</code> 输出多个值并换行</li>
+          <li>理解顺序结构程序的执行流程</li>
+        </ul>
+      </div>
+
+      <h3>5.1 输出 cout</h3>
+      <p>用 <code class="inline">&lt;&lt;</code> 连续拼接多个输出项：</p>
+      <pre><code><span class="type">int</span> a = <span class="num">3</span>, b = <span class="num">4</span>;
+cout &lt;&lt; <span class="str">"a + b = "</span> &lt;&lt; (a + b) &lt;&lt; endl;
+<span class="cm">// 输出：a + b = 7</span></code></pre>
+
+      <h3>5.2 输入 cin</h3>
+      <p>用 <code class="inline">&gt;&gt;</code> 从键盘读取数据，存入变量：</p>
+      <pre><code><span class="pp">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    <span class="type">int</span> score;
+    cout &lt;&lt; <span class="str">"请输入你的分数："</span>;
+    cin &gt;&gt; score;
+    cout &lt;&lt; <span class="str">"你输入的分数是："</span> &lt;&lt; score &lt;&lt; endl;
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+      <h3>5.3 顺序结构</h3>
+      <p>程序默认从上到下依次执行每条语句，这就是<strong>顺序结构</strong>。它是三种基本程序结构中最简单的一种。</p>
+
+      <div class="box tip">
+        <span class="label">小练习</span>
+        写一个程序：输入两个整数，输出它们的和、差、积。
+      </div>
+
+      <h3>5.4 本章小结</h3>
+      <ul>
+        <li>输出用 <code class="inline">cout &lt;&lt;</code>，输入用 <code class="inline">cin &gt;&gt;</code>。</li>
+        <li>语句按书写顺序自上而下执行。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/4"><span class="dir">← 上一章</span><span class="name">第 4 章</span></a>
+        <a class="next" href="#/chapter/6"><span class="dir">下一章</span><span class="name">第 6 章：分支语句 →</span></a>
+      </div>
+    </section>
+
+    <!-- ========== 第 6 章 ========== -->
+    <section class="view" id="view-ch-6">
+      <span class="chapter-tag">第 6 章 · 控制流篇</span>
+      <h2 class="chapter-title">分支语句</h2>
+      <p class="chapter-sub">让程序根据条件走不同的路。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>掌握 if / else if / else 的用法</li>
+          <li>掌握 switch 多分支语句</li>
+          <li>能写出成绩判定、奇偶判断等典型分支逻辑</li>
+        </ul>
+      </div>
+
+      <h3>6.1 if 语句</h3>
+      <pre><code><span class="type">int</span> age;
+cin &gt;&gt; age;
+
+<span class="kw">if</span> (age &gt;= <span class="num">18</span>) {
+    cout &lt;&lt; <span class="str">"成年"</span> &lt;&lt; endl;
+} <span class="kw">else</span> {
+    cout &lt;&lt; <span class="str">"未成年"</span> &lt;&lt; endl;
+}</code></pre>
+
+      <h3>6.2 多分支 else if</h3>
+      <pre><code><span class="type">int</span> score;
+cin &gt;&gt; score;
+
+<span class="kw">if</span> (score &gt;= <span class="num">90</span>)      cout &lt;&lt; <span class="str">"A"</span> &lt;&lt; endl;
+<span class="kw">else if</span> (score &gt;= <span class="num">80</span>) cout &lt;&lt; <span class="str">"B"</span> &lt;&lt; endl;
+<span class="kw">else if</span> (score &gt;= <span class="num">60</span>) cout &lt;&lt; <span class="str">"C"</span> &lt;&lt; endl;
+<span class="kw">else</span>                       cout &lt;&lt; <span class="str">"D"</span> &lt;&lt; endl;</code></pre>
+
+      <h3>6.3 switch 语句</h3>
+      <p>当判断条件是一个整数/字符的离散取值时，用 switch 更清晰：</p>
+      <pre><code><span class="type">int</span> day;
+cin &gt;&gt; day;
+<span class="kw">switch</span> (day) {
+    <span class="kw">case</span> <span class="num">1</span>: cout &lt;&lt; <span class="str">"星期一"</span>; <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">2</span>: cout &lt;&lt; <span class="str">"星期二"</span>; <span class="kw">break</span>;
+    <span class="kw">default</span>: cout &lt;&lt; <span class="str">"其它"</span>;
+}</code></pre>
+
+      <div class="box warn">
+        <span class="label">别忘了 break</span>
+        每个 case 末尾的 <code class="inline">break</code> 用来跳出 switch。漏掉它，程序会继续「穿透」执行下一个 case，这是初学者最常见的 bug。
+      </div>
+
+      <h3>6.4 本章小结</h3>
+      <ul>
+        <li>二选一比用 if-else，多选一用 else if 链或 switch。</li>
+        <li>switch 每个分支记得写 break。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/5"><span class="dir">← 上一章</span><span class="name">第 5 章</span></a>
+        <a class="next" href="#/chapter/7"><span class="dir">下一章</span><span class="name">第 7 章：循环语句 →</span></a>
+      </div>
+    </section>
+    <!-- ========== 第 7 章 ========== -->
+    <section class="view" id="view-ch-7">
+      <span class="chapter-tag">第 7 章 · 控制流篇</span>
+      <h2 class="chapter-title">循环语句</h2>
+      <p class="chapter-sub">让计算机替你重复做同一件事。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>掌握 while、do-while、for 三种循环</li>
+          <li>理解 break 与 continue 的区别</li>
+          <li>能写出累加、求和、九九表等经典程序</li>
+        </ul>
+      </div>
+
+      <h3>7.1 while 循环</h3>
+      <pre><code><span class="type">int</span> i = <span class="num">1</span>;
+<span class="kw">while</span> (i &lt;= <span class="num">5</span>) {
+    cout &lt;&lt; i &lt;&lt; <span class="str">" "</span>;
+    i++;
+}
+<span class="cm">// 输出：1 2 3 4 5</span></code></pre>
+
+      <h3>7.2 for 循环</h3>
+      <p>已知循环次数时，for 循环最紧凑（初始化、条件、步进写在一行）：</p>
+      <pre><code><span class="cm">// 求 1 到 100 的和</span>
+<span class="type">int</span> sum = <span class="num">0</span>;
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">1</span>; i &lt;= <span class="num">100</span>; i++) {
+    sum += i;
+}
+cout &lt;&lt; sum &lt;&lt; endl;   <span class="cm">// 5050</span></code></pre>
+
+      <h3>7.3 do-while 循环</h3>
+      <p>循环体至少执行一次（先执行后判断）：</p>
+      <pre><code><span class="type">int</span> n;
+<span class="kw">do</span> {
+    cout &lt;&lt; <span class="str">"输入一个正整数："</span>;
+    cin &gt;&gt; n;
+} <span class="kw">while</span> (n &lt;= <span class="num">0</span>);</code></pre>
+
+      <h3>7.4 break 与 continue</h3>
+      <ul>
+        <li><code class="inline">break</code>：立即跳出整个循环。</li>
+        <li><code class="inline">continue</code>：跳过本次剩余语句，直接进入下一次循环。</li>
+      </ul>
+
+      <div class="box tip">
+        <span class="label">经典练习</span>
+        用双层 for 循环打印九九乘法表：外层控制行 i 从 1 到 9，内层控制列 j 从 1 到 i。
+      </div>
+
+      <div class="box warn">
+        <span class="label">死循环</span>
+        循环条件永远为真、又没有 break 跳出，程序就会停不下来。写循环时务必确认循环变量会朝「条件不成立」的方向变化。
+      </div>
+
+      <h3>7.5 本章小结</h3>
+      <ul>
+        <li>三种循环可互相转换：计数用 for，条件用 while，至少执行一次用 do-while。</li>
+        <li>break 跳出循环，continue 跳到下一轮。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/6"><span class="dir">← 上一章</span><span class="name">第 6 章</span></a>
+        <a class="next" href="#/chapter/8"><span class="dir">下一章</span><span class="name">第 8 章：数组与字符串 →</span></a>
+      </div>
+    </section>
+
+    <!-- ========== 第 8 章 ========== -->
+    <section class="view" id="view-ch-8">
+      <span class="chapter-tag">第 8 章 · 数据组织篇</span>
+      <h2 class="chapter-title">数组与字符串</h2>
+      <p class="chapter-sub">用一个名字管理一批同类型数据。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>掌握一维数组的声明、遍历与下标访问</li>
+          <li>了解二维数组的基本用法</li>
+          <li>会使用 string 类处理字符串</li>
+        </ul>
+      </div>
+
+      <h3>8.1 一维数组</h3>
+      <pre><code><span class="type">int</span> scores[<span class="num">5</span>] = {<span class="num">90</span>, <span class="num">85</span>, <span class="num">78</span>, <span class="num">92</span>, <span class="num">88</span>};
+
+<span class="cm">// 下标从 0 开始：scores[0] 是第一个元素</span>
+<span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; <span class="num">5</span>; i++) {
+    cout &lt;&lt; scores[i] &lt;&lt; endl;
+}</code></pre>
+
+      <div class="box warn">
+        <span class="label">下标越界</span>
+        C++ 不检查数组下标是否越界。访问 <code class="inline">scores[5]</code>（长度为 5 的数组，合法下标是 0~4）不会报错，但会读到垃圾数据甚至导致程序崩溃。
+      </div>
+
+      <h3>8.2 二维数组</h3>
+      <pre><code><span class="type">int</span> matrix[<span class="num">2</span>][<span class="num">3</span>] = {
+    {<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>},
+    {<span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span>}
+};
+cout &lt;&lt; matrix[<span class="num">1</span>][<span class="num">2</span>];   <span class="cm">// 6</span></code></pre>
+
+      <h3>8.3 string 字符串</h3>
+      <p>使用标准库 <code class="inline">string</code> 可以方便地处理文本，需要包含头文件 <code class="inline">&lt;string&gt;</code>：</p>
+      <pre><code><span class="pp">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="pp">#include</span> <span class="str">&lt;string&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    string s1 = <span class="str">"Hello"</span>;
+    string s2 = <span class="str">"C++"</span>;
+    string s3 = s1 + <span class="str">" "</span> + s2;   <span class="cm">// 拼接</span>
+    cout &lt;&lt; s3 &lt;&lt; endl;            <span class="cm">// Hello C++</span>
+    cout &lt;&lt; s3.size() &lt;&lt; endl;     <span class="cm">// 长度 9</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+      <h3>8.4 本章小结</h3>
+      <ul>
+        <li>数组下标从 0 开始，长度为 n 的数组合法下标是 0 ~ n-1。</li>
+        <li>字符串优先使用 <code class="inline">string</code>，而不是裸字符数组。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/7"><span class="dir">← 上一章</span><span class="name">第 7 章</span></a>
+        <a class="next" href="#/chapter/9"><span class="dir">下一章</span><span class="name">第 9 章：函数 →</span></a>
+      </div>
+    </section>
+
+    <!-- ========== 第 9 章 ========== -->
+    <section class="view" id="view-ch-9">
+      <span class="chapter-tag">第 9 章 · 数据组织篇</span>
+      <h2 class="chapter-title">函数</h2>
+      <p class="chapter-sub">把一段功能封装起来，反复调用。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>掌握函数的定义、声明与调用</li>
+          <li>理解参数传递与返回值</li>
+          <li>了解函数重载与递归的概念</li>
+        </ul>
+      </div>
+
+      <h3>9.1 为什么需要函数</h3>
+      <p>函数把一段完成特定任务的代码包装起来，起个名字。好处：避免重复代码、结构清晰、便于调试与多人协作。</p>
+
+      <h3>9.2 定义与调用</h3>
+      <pre><code><span class="cm">// 返回值类型  函数名(参数列表) { 函数体 }</span>
+<span class="type">int</span> <span class="fn">add</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="kw">return</span> a + b;
+}
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    <span class="type">int</span> r = <span class="fn">add</span>(<span class="num">3</span>, <span class="num">4</span>);
+    cout &lt;&lt; r &lt;&lt; endl;   <span class="cm">// 7</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+      <h3>9.3 值传递</h3>
+      <p>C++ 默认把实参的值拷贝一份给形参，函数内部对形参的修改<strong>不会</strong>影响外部变量：</p>
+      <pre><code><span class="type">void</span> <span class="fn">tryChange</span>(<span class="type">int</span> x) {
+    x = <span class="num">100</span>;   <span class="cm">// 只改了副本</span>
+}
+<span class="cm">// main 中调用 tryChange(n) 后，n 本身不变</span></code></pre>
+
+      <h3>9.4 函数重载</h3>
+      <p>同一个函数名，参数列表不同，可以定义多个版本：</p>
+      <pre><code><span class="type">int</span>   <span class="fn">max</span>(<span class="type">int</span> a, <span class="type">int</span> b);
+<span class="type">double</span> <span class="fn">max</span>(<span class="type">double</span> a, <span class="type">double</span> b);   <span class="cm">// 合法重载</span></code></pre>
+
+      <div class="box tip">
+        <span class="label">本章练习</span>
+        写一个函数 <code class="inline">int factorial(int n)</code>，返回 n 的阶乘（1×2×...×n），再用 main 调用它输出 5! 的结果。
+      </div>
+
+      <h3>9.5 本章小结</h3>
+      <ul>
+        <li>函数 = 返回类型 + 函数名 + 参数列表 + 函数体。</li>
+        <li>默认参数是值传递，函数内改形参不影响外部。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/8"><span class="dir">← 上一章</span><span class="name">第 8 章</span></a>
+        <a class="next" href="#/chapter/10"><span class="dir">下一章</span><span class="name">第 10 章：指针与引用 →</span></a>
+      </div>
+    </section>
+    <!-- ========== 第 10 章 ========== -->
+    <section class="view" id="view-ch-10">
+      <span class="chapter-tag">第 10 章 · 进阶篇</span>
+      <h2 class="chapter-title">指针与引用</h2>
+      <p class="chapter-sub">C++ 最重要也最难的一关：直接操作内存地址。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>理解「内存地址」与指针的概念</li>
+          <li>掌握指针的定义、取地址与解引用</li>
+          <li>理解引用的本质及与指针的区别</li>
+        </ul>
+      </div>
+
+      <h3>10.1 内存与地址</h3>
+      <p>每个变量在内存中都占据一块位置，并有一个编号，即<strong>地址</strong>。运算符 <code class="inline">&amp;</code> 可以取出变量的地址：</p>
+      <pre><code><span class="type">int</span> a = <span class="num">10</span>;
+cout &lt;&lt; &amp;a &lt;&lt; endl;   <span class="cm">// 输出类似 0x61fe14 的地址</span></code></pre>
+
+      <h3>10.2 指针变量</h3>
+      <p>指针就是存放地址的变量。<code class="inline">类型 *</code> 表示「指向该类型的指针」：</p>
+      <pre><code><span class="type">int</span> a = <span class="num">10</span>;
+<span class="type">int</span>* p = &amp;a;     <span class="cm">// p 保存了 a 的地址</span>
+
+cout &lt;&lt; *p &lt;&lt; endl;  <span class="cm">// 解引用：通过地址读出 a 的值 10</span>
+*p = <span class="num">20</span>;          <span class="cm">// 通过指针修改 a</span>
+cout &lt;&lt; a &lt;&lt; endl;   <span class="cm">// 20</span></code></pre>
+
+      <h3>10.3 引用</h3>
+      <p>引用是变量的「别名」，定义时必须初始化，之后它就和原变量指向同一块内存：</p>
+      <pre><code><span class="type">int</span> a = <span class="num">10</span>;
+<span class="type">int</span>&amp; ref = a;    <span class="cm">// ref 是 a 的别名</span>
+ref = <span class="num">99</span>;
+cout &lt;&lt; a &lt;&lt; endl;   <span class="cm">// 99，a 也被改了</span></code></pre>
+
+      <p>引用最常见的用途是让函数能修改外部变量，或避免拷贝大对象：</p>
+      <pre><code><span class="type">void</span> <span class="fn">swap</span>(<span class="type">int</span>&amp; x, <span class="type">int</span>&amp; y) {
+    <span class="type">int</span> t = x; x = y; y = t;
+}
+<span class="cm">// 调用 swap(a, b) 后，a、b 的值真的被交换了</span></code></pre>
+
+      <div class="box warn">
+        <span class="label">新手常见错误</span>
+        ① 指针未初始化就使用（野指针）；② 解引用空指针 <code class="inline">nullptr</code>；③ 引用定义时忘了初始化。这三种都会导致程序崩溃。
+      </div>
+
+      <h3>10.4 本章小结</h3>
+      <ul>
+        <li>指针存地址，<code class="inline">*</code> 用于解引用。</li>
+        <li>引用是变量别名，函数参数用引用可修改实参。</li>
+      </ul>
+
+      <div class="pager">
+        <a href="#/chapter/9"><span class="dir">← 上一章</span><span class="name">第 9 章</span></a>
+        <a class="next" href="#/chapter/11"><span class="dir">下一章</span><span class="name">第 11 章：类与对象入门 →</span></a>
+      </div>
+    </section>
+
+    <!-- ========== 第 11 章 ========== -->
+    <section class="view" id="view-ch-11">
+      <span class="chapter-tag">第 11 章 · 进阶篇</span>
+      <h2 class="chapter-title">类与对象入门</h2>
+      <p class="chapter-sub">走进面向对象编程的大门。</p>
+
+      <div class="objectives">
+        <div class="title">本章学习目标</div>
+        <ul>
+          <li>理解「类」与「对象」的关系</li>
+          <li>学会定义类、声明成员变量与成员函数</li>
+          <li>了解构造函数与访问控制 public / private</li>
+        </ul>
+      </div>
+
+      <h3>11.1 从结构体到类</h3>
+      <p>面向对象思想把<strong>数据</strong>和<strong>操作数据的方法</strong>打包在一起。类是蓝图，对象是按蓝图造出的具体实例。</p>
+
+      <h3>11.2 定义一个类</h3>
+      <pre><code><span class="pp">#include</span> <span class="str">&lt;iostream&gt;</span>
+<span class="kw">using namespace</span> std;
+
+<span class="kw">class</span> <span class="type">Student</span> {
+<span class="kw">public</span>:                    <span class="cm">// 以下成员对外可访问</span>
+    <span class="cm">// 成员变量</span>
+    string name;
+    <span class="type">int</span> age;
+
+    <span class="cm">// 成员函数</span>
+    <span class="type">void</span> <span class="fn">introduce</span>() {
+        cout &lt;&lt; <span class="str">"我叫"</span> &lt;&lt; name &lt;&lt; <span class="str">"，今年"</span> &lt;&lt; age &lt;&lt; <span class="str">"岁"</span> &lt;&lt; endl;
+    }
+};
+
+<span class="type">int</span> <span class="fn">main</span>() {
+    Student s;             <span class="cm">// 创建对象</span>
+    s.name = <span class="str">"小明"</span>;
+    s.age  = <span class="num">20</span>;
+    s.<span class="fn">introduce</span>();       <span class="cm">// 调用成员函数</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</code></pre>
+
+      <h3>11.3 构造函数</h3>
+      <p>构造函数在对象创建时自动调用，常用于初始化成员。它与类同名、没有返回值：</p>
+      <pre><code><span class="kw">class</span> <span class="type">Student</span> {
+<span class="kw">public</span>:
+    string name;
+    <span class="type">int</span> age;
+    <span class="fn">Student</span>(string n, <span class="type">int</span> a) {   <span class="cm">// 构造函数</span>
+        name = n;
+        age  = a;
+    }
+};
+
+<span class="cm">// 创建对象时直接传参</span>
+Student s(<span class="str">"小红"</span>, <span class="num">19</span>);</code></pre>
+
+      <h3>11.4 public 与 private</h3>
+      <ul>
+        <li><code class="inline">public</code>：外部可以直接访问。</li>
+        <li><code class="inline">private</code>：只能在类内部访问，外部需通过公开的成员函数操作。这就是<strong>封装</strong>。</li>
+      </ul>
+
+      <div class="box tip">
+        <span class="label">学完本教程后可以继续</span>
+        继承与多态、运算符重载、STL 容器（vector / map）、模板、文件输入输出——这些是 C++ 进阶内容，建议在熟练掌握本教程 11 章后再深入。
+      </div>
+
+      <h3>11.5 课程总结</h3>
+      <p>恭喜你完成全部 11 章！回顾一下学习路径：</p>
+      <ol>
+        <li>环境与第一个程序 → 2. 数据与运算 → 3. 输入输出与控制流 → 4. 数组与函数 → 5. 指针、引用与面向对象入门。</li>
+      </ol>
+      <p>编程是一门实践性极强的技能，建议每学一章就在编译器里把代码敲一遍、改一改，观察结果变化。</p>
+
+      <div class="pager">
+        <a href="#/chapter/10"><span class="dir">← 上一章</span><span class="name">第 10 章</span></a>
+        <a class="next" href="#/home"><span class="dir">回到</span><span class="name">课程首页 ↑</span></a>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+// 章节元数据
+const CHAPTERS = [
+  {id:1, title:"C++ 简介与环境搭建", prev:null, next:2},
+  {id:2, title:"第一个 C++ 程序", prev:1, next:3},
+  {id:3, title:"数据类型与变量", prev:2, next:4},
+  {id:4, title:"运算符与表达式", prev:3, next:5},
+  {id:5, title:"输入与输出", prev:4, next:6},
+  {id:6, title:"分支语句", prev:5, next:7},
+  {id:7, title:"循环语句", prev:6, next:8},
+  {id:8, title:"数组与字符串", prev:7, next:9},
+  {id:9, title:"函数", prev:8, next:10},
+  {id:10, title:"指针与引用", prev:9, next:11},
+  {id:11, title:"类与对象入门", prev:10, next:null},
+];
+
+function route(){
+  const hash = location.hash || "#/home";
+  const m = hash.match(/#\/chapter\/(\d+)/);
+  document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+  let target;
+  if(m){
+    const id = parseInt(m[1]);
+    target = document.getElementById("view-ch-"+id);
+    if(!target){ location.hash = "#/home"; return; }
+  }else{
+    target = document.getElementById("view-home");
+  }
+  target.classList.add("active");
+  // 高亮侧边栏
+  document.querySelectorAll(".nav a").forEach(a=>a.classList.remove("active"));
+  const routeKey = m ? "ch-"+m[1] : "home";
+  const navLink = document.querySelector(`.nav a[data-route="${routeKey}"]`);
+  if(navLink) navLink.classList.add("active");
+  // 关闭移动端侧栏
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("overlay").classList.remove("show");
+  window.scrollTo({top:0});
+  updateProgress();
+}
+
+function updateProgress(){
+  const h = document.documentElement;
+  const scrolled = h.scrollTop || document.body.scrollTop;
+  const max = h.scrollHeight - h.clientHeight;
+  const pct = max>0 ? (scrolled/max)*100 : 0;
+  document.getElementById("progressFill").style.width = pct+"%";
+}
+
+window.addEventListener("hashchange", route);
+window.addEventListener("scroll", updateProgress);
+document.getElementById("menuBtn").onclick = ()=>{
+  document.getElementById("sidebar").classList.add("open");
+  document.getElementById("overlay").classList.add("show");
+};
+document.getElementById("overlay").onclick = ()=>{
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("overlay").classList.remove("show");
+};
+
+route();
+</script>
+</body>
+</html>
